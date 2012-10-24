@@ -1,4 +1,7 @@
-
+/*
+* the main class of the game:
+* Setup the GUI and implement event handlers
+*/
 import javax.swing.*;
 
 import java.awt.*;
