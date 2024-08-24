@@ -1,0 +1,84 @@
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import java.awt.event.ActionEvent;
+
+public class BlackJackGuiTest {
+
+    private BlackJackGui gui;
+    
+    @Before
+    public void setUp() {
+        gui = new BlackJackGui();
+        gui.init();
+    }
+    
+    @Test
+    public void testNewGameInitialization() {
+        gui.setupNewGame();
+        
+        assertEquals(2, gui.getPlayer().getHand().size());
+        assertEquals(2, gui.getDealer().getHand().size());
+        assertTrue(gui.isGameOn());
+    }
+    
+    @Test
+    public void testHitButtonAction() {
+        gui.setupNewGame();
+
+        int initialHandSize = gui.getPlayer().getHand().size();
+
+        gui.getHitListener().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+        
+        assertEquals(initialHandSize + 1, gui.getPlayer().getHand().size());
+        assertTrue(gui.isGameOn() || gui.getMessage().equals("Busted ! You lose !"));
+    }
+
+    @Test
+    public void testStandButtonAction() {
+        gui.setupNewGame();
+
+        gui.getStandListener().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+        
+        assertFalse(gui.isGameOn());
+
+        int dealerHandValue = Math.min(gui.getDealer().getValueOfHand()[0], gui.getDealer().getValueOfHand()[1]);
+        assertTrue(dealerHandValue >= BlackJackGui.DEALER_LIMIT || gui.getMessage().equals("You win !"));
+    }
+
+    @Test
+    public void testDetermineWinner() {
+        gui.setupNewGame();
+
+        gui.getPlayer().getHand().clear();
+        gui.getDealer().getHand().clear();
+        
+        gui.getPlayer().addCard(new Card(Card.Suit.HEARTS, Card.FaceValue.ACE, null));
+        gui.getPlayer().addCard(new Card(Card.Suit.HEARTS, Card.FaceValue.KING, null));
+        
+        gui.getDealer().addCard(new Card(Card.Suit.SPADES, Card.FaceValue.TEN, null));
+        gui.getDealer().addCard(new Card(Card.Suit.CLUBS, Card.FaceValue.NINE, null));
+        
+        gui.getStandListener().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+
+        assertEquals("You win !", gui.getMessage());
+    }
+
+    @Test
+    public void testImmediateBlackjackDetection() {
+        gui.setupNewGame();
+
+        gui.getPlayer().getHand().clear();
+        gui.getDealer().getHand().clear();
+        
+        gui.getPlayer().addCard(new Card(Card.Suit.HEARTS, Card.FaceValue.ACE, null));
+        gui.getPlayer().addCard(new Card(Card.Suit.HEARTS, Card.FaceValue.KING, null));
+        
+        gui.getDealer().addCard(new Card(Card.Suit.SPADES, Card.FaceValue.NINE, null));
+        gui.getDealer().addCard(new Card(Card.Suit.CLUBS, Card.FaceValue.EIGHT, null));
+
+        gui.getNewGameListener().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+
+        assertEquals("Blackjack ! You win !", gui.getMessage());
+    }
+}
